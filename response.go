@@ -1,7 +1,6 @@
 package osin
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -108,10 +107,6 @@ func (r *Response) SetRedirectFragment(f bool) {
 
 // GetRedirectUrl returns the redirect url with all query string parameters
 func (r *Response) GetRedirectUrl() (string, error) {
-	if r.Type != REDIRECT {
-		return "", errors.New("Not a redirect response")
-	}
-
 	u, err := url.Parse(r.URL)
 	if err != nil {
 		return "", err

@@ -2,33 +2,29 @@ package osin
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 )
 
 // OutputJSON encodes the Response to JSON and writes to the http.ResponseWriter
-func OutputJSON(rs *Response, w http.ResponseWriter, r *http.Request) error {
+func OutputJSON(rs *Response, w io.Writer, r *http.Request) error {
 	// Add headers
-	for i, k := range rs.Headers {
-		for _, v := range k {
-			w.Header().Add(i, v)
-		}
-	}
 
 	if rs.Type == REDIRECT {
+		q := w.(http.ResponseWriter)
+		for i, k := range rs.Headers {
+			for _, v := range k {
+				q.Header().Add(i, v)
+			}
+		}
 		// Output redirect with parameters
 		u, err := rs.GetRedirectUrl()
 		if err != nil {
 			return err
 		}
-		w.Header().Add("Location", u)
-		w.WriteHeader(302)
+		q.Header().Add("Location", u)
+		q.WriteHeader(302)
 	} else {
-		// set content type if the response doesn't already have one associated with it
-		if w.Header().Get("Content-Type") == "" {
-			w.Header().Set("Content-Type", "application/json")
-		}
-		w.WriteHeader(rs.StatusCode)
-
 		encoder := json.NewEncoder(w)
 		err := encoder.Encode(rs.Output)
 		if err != nil {
